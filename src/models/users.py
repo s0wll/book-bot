@@ -11,5 +11,3 @@ class UsersORM(Base):
     user_id: Mapped[int] = mapped_column(BigInteger, unique=True)
     page: Mapped[int] = mapped_column(Integer, default=1, nullable=True)
     bookmarks: Mapped[list[int]] = mapped_column(ARRAY(Integer), default=[], nullable=True)
-    
-

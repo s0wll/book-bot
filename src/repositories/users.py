@@ -21,7 +21,6 @@ class UsersRepository:
         model = self.schema.model_validate(result.scalars().one(), from_attributes=True)
         return model
 
-
     async def update_page_and_bookmarks(
         self, user_id: int, update_data: UserUpdate, exclude_unset: bool = True
     ) -> None:

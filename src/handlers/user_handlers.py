@@ -7,8 +7,7 @@ from asyncpg.exceptions import UniqueViolationError
 from src.database.db_manager import db
 from src.schemas.users import UserAdd, UserUpdate
 from src.filters.filters import IsDelBookmarkCallbackData, IsDigitCallbackData
-from src.keyboards.bookmarks_kb import (create_bookmarks_keyboard,
-                                        create_edit_keyboard)
+from src.keyboards.bookmarks_kb import create_bookmarks_keyboard, create_edit_keyboard
 from src.keyboards.pagination_kb import create_pagination_keyboard
 from src.locales.lexicon import LEXICON
 from src.services.file_handling import book
@@ -37,12 +36,7 @@ async def process_help_command(message: Message):
 async def process_beginning_command(message: Message):
     text = book[1]
     await message.answer(
-        text=text,
-        reply_markup=create_pagination_keyboard(
-            "backward",
-            f'1/{len(book)}',
-            "forward"
-        )
+        text=text, reply_markup=create_pagination_keyboard("backward", f"1/{len(book)}", "forward")
     )
 
 
@@ -52,11 +46,7 @@ async def process_continue_command(message: Message):
     text = book[user.page]
     await message.answer(
         text=text,
-        reply_markup=create_pagination_keyboard(
-            "backward",
-            f'{user.page}/{len(book)}',
-            "forward"
-        )
+        reply_markup=create_pagination_keyboard("backward", f"{user.page}/{len(book)}", "forward"),
     )
 
 
@@ -65,10 +55,7 @@ async def process_bookmarks_command(message: Message):
     user = await db.users.get_user_data(message.from_user.id)
     if user.bookmarks:
         await message.answer(
-            text=LEXICON[message.text],
-            reply_markup=create_bookmarks_keyboard(
-                *user.bookmarks
-            )
+            text=LEXICON[message.text], reply_markup=create_bookmarks_keyboard(*user.bookmarks)
         )
     else:
         await message.answer(text=LEXICON["no_bookmarks"])
@@ -80,17 +67,14 @@ async def process_forward_press(callback: CallbackQuery):
     if user.page < len(book):
         new_page = user.page + 1
         await db.users.update_page_and_bookmarks(
-            user_id=callback.from_user.id,
-            update_data=UserUpdate(page=new_page)
+            user_id=callback.from_user.id, update_data=UserUpdate(page=new_page)
         )
         text = book[new_page]
         await callback.message.edit_text(
             text=text,
             reply_markup=create_pagination_keyboard(
-                'backward',
-                f'{new_page}/{len(book)}',
-                'forward'
-            )
+                "backward", f"{new_page}/{len(book)}", "forward"
+            ),
         )
     await callback.answer()
 
@@ -101,17 +85,14 @@ async def process_backward_press(callback: CallbackQuery):
     if user.page > 1:
         new_page = user.page - 1
         await db.users.update_page_and_bookmarks(
-            user_id=callback.from_user.id,
-            update_data=UserUpdate(page=new_page)
+            user_id=callback.from_user.id, update_data=UserUpdate(page=new_page)
         )
         text = book[new_page]
         await callback.message.edit_text(
             text=text,
             reply_markup=create_pagination_keyboard(
-                'backward',
-                f'{new_page}/{len(book)}',
-                'forward'
-            )
+                "backward", f"{new_page}/{len(book)}", "forward"
+            ),
         )
     await callback.answer()
 
@@ -125,8 +106,7 @@ async def process_page_press(callback: CallbackQuery):
         new_bookmarks = []
     new_bookmarks.append(user.page)
     await db.users.update_page_and_bookmarks(
-        user_id=callback.from_user.id,
-        update_data=UserUpdate(bookmarks=new_bookmarks)
+        user_id=callback.from_user.id, update_data=UserUpdate(bookmarks=new_bookmarks)
     )
     await callback.answer("Страница добавлена в закладки!")
 
@@ -138,11 +118,7 @@ async def process_bookmark_press(callback: CallbackQuery):
     user.page = int(callback.data)
     await callback.message.edit_text(
         text=text,
-        reply_markup=create_pagination_keyboard(
-            "backward",
-            f'{user.page}/{len(book)}',
-            "forward"
-        )
+        reply_markup=create_pagination_keyboard("backward", f"{user.page}/{len(book)}", "forward"),
     )
 
 
@@ -150,10 +126,7 @@ async def process_bookmark_press(callback: CallbackQuery):
 async def process_edit_press(callback: CallbackQuery):
     user = await db.users.get_user_data(callback.from_user.id)
     await callback.message.edit_text(
-        text=LEXICON[callback.data],
-        reply_markup=create_edit_keyboard(
-            *user.bookmarks
-        )
+        text=LEXICON[callback.data], reply_markup=create_edit_keyboard(*user.bookmarks)
     )
 
 
@@ -169,18 +142,12 @@ async def process_del_bookmark_press(callback: CallbackQuery):
     new_bookmarks.remove(int(callback.data[:-3]))
 
     await db.users.update_page_and_bookmarks(
-        user_id=callback.from_user.id,
-        update_data=UserUpdate(bookmarks=new_bookmarks)
+        user_id=callback.from_user.id, update_data=UserUpdate(bookmarks=new_bookmarks)
     )
 
     if new_bookmarks:
         await callback.message.edit_text(
-            text=LEXICON["/bookmarks"],
-            reply_markup=create_edit_keyboard(
-                *new_bookmarks
-            )
+            text=LEXICON["/bookmarks"], reply_markup=create_edit_keyboard(*new_bookmarks)
         )
     else:
         await callback.message.edit_text(text=LEXICON["no_bookmarks"])
-    
-    

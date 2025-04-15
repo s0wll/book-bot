@@ -6,7 +6,7 @@ class UserAdd(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    page: int | None =  None
+    page: int | None = None
     bookmarks: list[int] | None = None
 
 
