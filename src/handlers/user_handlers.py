@@ -20,10 +20,10 @@ router = Router()
 async def process_start_command(message: Message):
     try:
         await db.users.add_user(UserAdd(user_id=message.from_user.id))
-        await db.commit()
     except IntegrityError as exc:
         if isinstance(exc.orig.__cause__, UniqueViolationError):
             await message.answer("Вы уже зарегистрированы и являетесь читателем")
+    await db.commit()
     await message.answer(LEXICON[message.text])
 
 
